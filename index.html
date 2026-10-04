@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffd6e7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Cuenta atrás</title>
+<style>
+  :root { --bg:#ffd6e7; --card:#fff5f9; --text:#7a2e55; --muted:#c27a9f; --accent:#f06fa8; }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    min-height: 100dvh; background: radial-gradient(circle at top, #fff0f6, var(--bg) 70%);
+    color: var(--text); font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px 16px; text-align: center;
+  }
+  h1 { font-size: 1.1rem; font-weight: 500; color: var(--muted); }
+  .target { font-size: 1.5rem; font-weight: 700; margin: 6px 0 28px; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; width: 100%; max-width: 380px; }
+  .box { background: var(--card); border-radius: 20px; padding: 22px 8px; box-shadow: 0 6px 18px rgba(240,111,168,.25); }
+  .num { font-size: 3.2rem; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; }
+  .label { margin-top: 8px; font-size: .85rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .total { margin-top: 26px; color: var(--muted); font-size: .95rem; line-height: 1.6; }
+  .total b { color: var(--text); }
+  .done { font-size: 2rem; font-weight: 800; color: var(--accent); }
+  .heart {
+    position: fixed; bottom: -40px; pointer-events: none; user-select: none; z-index: 0;
+    animation: float linear infinite; opacity: 0;
+  }
+  .grid, .target, h1, .total, .done { position: relative; z-index: 1; }
+  @keyframes float {
+    0%   { transform: translateY(0) rotate(-10deg); opacity: 0; }
+    10%  { opacity: .8; }
+    90%  { opacity: .8; }
+    100% { transform: translateY(-110dvh) rotate(10deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+  <h1>Tiempo que falta para verte</h1>
+  <div class="target">7 de noviembre · 05:55</div>
+
+  <div id="grid" class="grid">
+    <div class="box"><div class="num" id="d">0</div><div class="label">Días</div></div>
+    <div class="box"><div class="num" id="h">00</div><div class="label">Horas</div></div>
+    <div class="box"><div class="num" id="m">00</div><div class="label">Minutos</div></div>
+    <div class="box"><div class="num" id="s">00</div><div class="label">Segundos</div></div>
+  </div>
+  <div id="done" class="done" hidden>¡Ya es la hora de verte! 💖</div>
+
+  <p class="total" id="total"></p>
+
+<script>
+  // Próximo 7 de noviembre a las 05:55 (hora local del dispositivo)
+  function nextTarget() {
+    const now = new Date();
+    let t = new Date(now.getFullYear(), 10, 7, 5, 55, 0);
+    if (t <= now) t = new Date(now.getFullYear() + 1, 10, 7, 5, 55, 0);
+    return t;
+  }
+  const target = nextTarget();
+  const pad = n => String(n).padStart(2, "0");
+  const $ = id => document.getElementById(id);
+
+  function tick() {
+    const diff = target - new Date();
+    if (diff <= 0) {
+      $("grid").hidden = true; $("total").hidden = true; $("done").hidden = false;
+      return;
+    }
+    const secs = Math.floor(diff / 1000);
+    $("d").textContent = Math.floor(secs / 86400);
+    $("h").textContent = pad(Math.floor(secs % 86400 / 3600));
+    $("m").textContent = pad(Math.floor(secs % 3600 / 60));
+    $("s").textContent = pad(secs % 60);
+    $("total").innerHTML =
+      `Son <b>${Math.floor(secs / 3600).toLocaleString("es-ES")}</b> horas<br>` +
+      `o <b>${Math.floor(secs / 60).toLocaleString("es-ES")}</b> minutos<br>` +
+      `o <b>${secs.toLocaleString("es-ES")}</b> segundos`;
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // Corazoncitos flotando por los lados
+  const icons = ["💗", "💖", "💕", "🩷", "💞"];
+  for (let i = 0; i < 16; i++) {
+    const h = document.createElement("span");
+    h.className = "heart";
+    h.textContent = icons[i % icons.length];
+    const left = i % 2 === 0;
+    const off = Math.random() * 9; // % desde el borde
+    h.style[left ? "left" : "right"] = off + "%";
+    h.style.fontSize = (14 + Math.random() * 16) + "px";
+    h.style.animationDuration = (7 + Math.random() * 7) + "s";
+    h.style.animationDelay = (-Math.random() * 14) + "s";
+    document.body.appendChild(h);
+  }
+</script>
+</body>
+</html>
